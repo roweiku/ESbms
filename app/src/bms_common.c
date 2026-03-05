@@ -42,8 +42,8 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
 {
     bms->nominal_capacity_Ah = nominal_capacity_Ah;
 
-    bms->chg_enable = true;
-    bms->dis_enable = true;
+    bms->chg_enable = false;
+    bms->dis_enable = false;
 
     bms->ic_conf.auto_balancing = true;
     bms->ic_conf.bal_idle_delay = 1800;         // default: 30 minutes

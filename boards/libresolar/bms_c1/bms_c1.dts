@@ -89,6 +89,7 @@
 		reg = <0x08>;
 		alert-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
 		used-cell-channels = <0xFFFF>;
+		crc-enabled;
 		/* all NTCs configured with 18k pull-up */
 		ts1-pin-config = <0x07>;
 		ts3-pin-config = <0x07>;
