@@ -856,6 +856,7 @@ static void bms_ic_bq769x2_assign_data(const struct device *dev, struct bms_ic_d
 static int bms_ic_bq769x2_set_switches(const struct device *dev, uint8_t switches, bool enabled)
 {
     union bq769x2_reg_fet_status fet_status;
+    union bq769x2_reg_fet_control fet_ctrl;
     int err;
 
     err = bq769x2_direct_read_u1(dev, BQ769X2_CMD_FET_STATUS, &fet_status.byte);
@@ -863,27 +864,30 @@ static int bms_ic_bq769x2_set_switches(const struct device *dev, uint8_t switche
         return err;
     }
 
-    /* only lower 4 bytes relevant for FET_CONTROL */
-    fet_status.byte &= 0x0F;
+    /*
+    * FET Status Register  1 = The DSG FET is on.
+    * FET Control Register 1 = DSG FET driver is forced off
+    */
+    fet_ctrl.CHG_OFF  = !fet_status.CHG_FET;
+    fet_ctrl.DSG_OFF  = !fet_status.DSG_FET;
+    fet_ctrl.PDSG_OFF = !fet_status.PDSG_FET;
+    fet_ctrl.PCHG_OFF = !fet_status.PCHG_FET;
+    fet_ctrl.RSVD     = 0;
 
     if (switches & BMS_SWITCH_CHG) {
-        fet_status.CHG_FET = enabled ? 1 : 0;
+        fet_ctrl.CHG_OFF  = enabled ? 0 : 1;
     }
     if (switches & BMS_SWITCH_DIS) {
-        fet_status.DSG_FET = enabled ? 1 : 0;
+        fet_ctrl.DSG_OFF  = enabled ? 0 : 1;
     }
     if (switches & BMS_SWITCH_PDSG) {
-        fet_status.PDSG_FET = enabled ? 1 : 0;
+        fet_ctrl.PDSG_OFF = enabled ? 0 : 1;
     }
     if (switches & BMS_SWITCH_PCHG) {
-        fet_status.PCHG_FET = enabled ? 1 : 0;
+        fet_ctrl.PCHG_OFF = enabled ? 0 : 1;
     }
 
-    err = bq769x2_subcmd_write_u1(dev, BQ769X2_SUBCMD_FET_CONTROL, fet_status.byte);
-
-    if (enabled) {
-        err |= bq769x2_subcmd_cmd_only(dev, BQ769X2_SUBCMD_ALL_FETS_ON);
-    }
+    err = bq769x2_subcmd_write_u1(dev, BQ769X2_SUBCMD_FET_CONTROL, fet_ctrl.byte);
 
     return err == 0 ? 0 : -EIO;
 }

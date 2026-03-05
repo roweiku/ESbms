@@ -484,6 +484,18 @@ union bq769x2_reg_fet_status {
     uint8_t byte;
 };
 
+union bq769x2_reg_fet_control {
+    struct
+    {
+        uint8_t DSG_OFF  : 1;
+        uint8_t PDSG_OFF : 1;
+        uint8_t CHG_OFF  : 1;
+        uint8_t PCHG_OFF : 1;
+        uint8_t RSVD     : 4;
+    };
+    uint8_t byte;
+};
+
 union bq769x2_reg_mfg_status {
     struct
     {
