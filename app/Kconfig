@@ -6,9 +6,9 @@ mainmenu "Libre Solar Battery Management System Firmware"
 menu "Battery default settings"
 
 config BAT_CAPACITY_AH
-    int "Battery nominal capacity in Ah"
-    range 10 1000
-    default 50
+    int "Battery nominal capacity in mAh"
+    range 10 1000000
+    default 50000
     help
       Nominal battery capacity or sum of parallel cells capacity
 

@@ -87,7 +87,7 @@ int main(void)
 
 static int init_config(void)
 {
-    bms_init_config(&bms, (enum bms_cell_type)CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH);
+    bms_init_config(&bms, (enum bms_cell_type)CONFIG_CELL_TYPE, CONFIG_BAT_CAPACITY_AH / 1000.0F);
 
     return 0;
 }
