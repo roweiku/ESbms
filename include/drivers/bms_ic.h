@@ -198,7 +198,7 @@ typedef void (*bms_ic_api_assign_data)(const struct device *dev, struct bms_ic_d
 
 typedef int (*bms_ic_api_read_data)(const struct device *dev, uint32_t flags);
 
-typedef int (*bms_ic_api_set_switches)(const struct device *dev, uint8_t switches, bool enabled);
+typedef int (*bms_ic_api_set_switches)(const struct device *dev, uint8_t switches_enabled);
 
 typedef int (*bms_ic_api_balance)(const struct device *dev, uint32_t cells);
 
@@ -299,12 +299,11 @@ static inline int bms_ic_read_data(const struct device *dev, uint32_t flags)
  * @brief Switch the specified MOSFET(s) on or off.
  *
  * @param dev Pointer to the device structure for the driver instance.
- * @param switches MOSFET(s) to switch on/off.
- * @param enabled If the MOSFET(s) should be enabled (on) or disabled (off)
+ * @param switches_enabled Bitmask of FETs to enable (BMS_SWITCH_CHG, BMS_SWITCH_DIS, etc.).
  *
  * @return 0 for success or negative error code otherwise.
  */
-static inline int bms_ic_set_switches(const struct device *dev, uint8_t switches, bool enabled)
+static inline int bms_ic_set_switches(const struct device *dev, uint8_t switches_enabled)
 {
     const struct bms_ic_driver_api *api = (const struct bms_ic_driver_api *)dev->api;
 
@@ -312,7 +311,7 @@ static inline int bms_ic_set_switches(const struct device *dev, uint8_t switches
         return -ENOSYS;
     }
 
-    return api->set_switches(dev, switches, enabled);
+    return api->set_switches(dev, switches_enabled);
 }
 #endif
 

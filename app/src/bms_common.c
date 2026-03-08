@@ -122,26 +122,24 @@ __weak void bms_state_machine(struct bms_context *bms)
     switch (bms->state) {
         case BMS_STATE_OFF:
             if (bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG);
                 bms->state = BMS_STATE_DIS;
                 LOG_INF("OFF -> DIS (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
                 bms->state = BMS_STATE_CHG;
                 LOG_INF("OFF -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             break;
         case BMS_STATE_CHG:
             if (!bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
-                /* DIS switch may be on on because of ideal diode control */
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
+                bms_ic_set_switches(bms->ic_dev, 0);
                 bms->state = BMS_STATE_OFF;
                 LOG_INF("CHG -> OFF (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG | BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
                 bms->state = BMS_STATE_NORMAL;
                 LOG_INF("CHG -> NORMAL (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
@@ -159,14 +157,12 @@ __weak void bms_state_machine(struct bms_context *bms)
             break;
         case BMS_STATE_DIS:
             if (!bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
-                /* CHG_FET may be on because of ideal diode control */
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
+                bms_ic_set_switches(bms->ic_dev, 0);
                 bms->state = BMS_STATE_OFF;
                 LOG_INF("DIS -> OFF (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, true);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG | BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
                 bms->state = BMS_STATE_NORMAL;
                 LOG_INF("DIS -> NORMAL (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
@@ -184,12 +180,12 @@ __weak void bms_state_machine(struct bms_context *bms)
             break;
         case BMS_STATE_NORMAL:
             if (!bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
                 bms->state = BMS_STATE_CHG;
                 LOG_INF("NORMAL -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
             else if (!bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
+                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG);
                 bms->state = BMS_STATE_DIS;
                 LOG_INF("NORMAL -> DIS (error flags: 0x%08x)", bms->ic_data.error_flags);
             }
@@ -202,8 +198,7 @@ __weak void bms_state_machine(struct bms_context *bms)
 
 void bms_shutdown(struct bms_context *bms)
 {
-    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
-    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
+    bms_ic_set_switches(bms->ic_dev, 0);
     bms->state = BMS_STATE_SHUTDOWN;
 }
 
