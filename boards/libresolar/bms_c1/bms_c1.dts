@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <zephyr/dt-bindings/led/led.h>
+
 /dts-v1/;
 
 #include <espressif/esp32c3/esp32c3_mini_n4.dtsi>
@@ -33,6 +35,7 @@
 		zephyr,bt-hci = &esp32_bt_hci;
 		thingset,can = &twai;
 		thingset,serial = &uart0;
+		zephyr,led-strip = &led_strip;
 	};
 
 	leds {
@@ -187,7 +190,36 @@
 		};
 	};
 
+	spim2_default: spim2_default {
+		group1 {
+			pinmux = <SPIM2_MOSI_GPIO7>;
+			output-low;
+		};
+	};
+
 	/* see version-specific overlays for I2C */
+};
+
+&spi2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	pinctrl-0 = <&spim2_default>;
+	pinctrl-names = "default";
+	line-idle-low;
+
+	led_strip: ws2812@0 {
+		compatible = "worldsemi,ws2812-spi";
+		reg = <0>;
+		spi-max-frequency = <6400000>;
+		spi-cpha;
+		spi-one-frame = <0xf0>;
+		spi-zero-frame = <0xc0>;
+		chain-length = <4>;
+		color-mapping = <LED_COLOR_ID_GREEN
+				 LED_COLOR_ID_RED
+				 LED_COLOR_ID_BLUE>;
+	};
 };
 
 &esp32_bt_hci {
