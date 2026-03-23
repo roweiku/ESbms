@@ -62,21 +62,9 @@ int main(void)
         if (err != 0) {
             LOG_ERR("Failed to read data from BMS IC: %d", err);
         }
+        bms.error_flags |= bms.ic_data.error_flags;
 
         bms_soc_update(&bms);
-
-        bms_state_machine(&bms);
-
-        if (button_pressed_for_3s()) {
-            LOG_WRN("Button pressed for 3s: shutdown...");
-            bms_shutdown(&bms);
-            /*
-             * Wait another 10s for the user to release the button again before actually turning off
-             * the BMS IC (otherwise it will immediately restart).
-             */
-            k_sleep(K_MSEC(10000));
-            bms_ic_set_mode(bms.ic_dev, BMS_IC_MODE_OFF);
-        }
 
         t_start += CONFIG_BMS_IC_POLLING_INTERVAL_MS;
         k_sleep(K_TIMEOUT_ABS_MS(t_start));

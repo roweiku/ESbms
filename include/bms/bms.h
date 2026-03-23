@@ -56,6 +56,9 @@ struct bms_context
     /** Current state of the battery */
     enum bms_state state;
 
+    /** BMS errors stored as BMS_ERR_* flags */
+    uint32_t error_flags;
+
     /** Manual enable/disable setting for charging */
     bool chg_enable;
     /** Manual enable/disable setting for discharging */
@@ -99,20 +102,6 @@ struct bms_context
  * @param capacity_Ah Nominal capacity of the battery pack.
  */
 void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float capacity_Ah);
-
-/**
- * Main BMS state machine
- *
- * @param bms Pointer to BMS object.
- */
-void bms_state_machine(struct bms_context *bms);
-
-/**
- * Switch off MOSFETs and go into the shutdown state
- *
- * @param bms Pointer to BMS object.
- */
-void bms_shutdown(struct bms_context *bms);
 
 /**
  * Update SOC based on most recent current measurement

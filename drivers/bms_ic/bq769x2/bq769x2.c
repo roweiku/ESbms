@@ -803,10 +803,10 @@ static int bms_ic_bq769x2_read_data(const struct device *dev, uint32_t flags)
 
     union bq769x2_reg_fet_status fet_status;
     err = bq769x2_direct_read_u1(dev, BQ769X2_CMD_FET_STATUS, &fet_status.byte);
-    LOG_INF("FET Status new: CHG=%d PCHG=%d DSG=%d PDSG=%d DCHG_PIN=%d DDSG_PIN=%d", 
-        fet_status.CHG_FET, fet_status.PCHG_FET, 
-        fet_status.DSG_FET, fet_status.PDSG_FET, 
-        fet_status.DCHG_PIN, fet_status.DDSG_PIN);
+    // LOG_INF("FET Status new: CHG=%d PCHG=%d DSG=%d PDSG=%d DCHG_PIN=%d DDSG_PIN=%d", 
+    //     fet_status.CHG_FET, fet_status.PCHG_FET, 
+    //     fet_status.DSG_FET, fet_status.PDSG_FET, 
+    //     fet_status.DCHG_PIN, fet_status.DDSG_PIN);
     
     if (ic_data == NULL) {
         return -ENOMEM;

@@ -42,7 +42,7 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
 {
     bms->nominal_capacity_Ah = nominal_capacity_Ah;
 
-    bms->chg_enable = false;
+    bms->chg_enable = true;
     bms->dis_enable = false;
 
     bms->ic_conf.auto_balancing = true;
@@ -115,91 +115,6 @@ void bms_init_config(struct bms_context *bms, enum bms_cell_type type, float nom
 
     /* trigger alert for all possible errors by default */
     bms->ic_conf.alert_mask = BMS_ERR_ALL;
-}
-
-__weak void bms_state_machine(struct bms_context *bms)
-{
-    switch (bms->state) {
-        case BMS_STATE_OFF:
-            if (bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG);
-                bms->state = BMS_STATE_DIS;
-                LOG_INF("OFF -> DIS (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-            else if (bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
-                bms->state = BMS_STATE_CHG;
-                LOG_INF("OFF -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-            break;
-        case BMS_STATE_CHG:
-            if (!bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, 0);
-                bms->state = BMS_STATE_OFF;
-                LOG_INF("CHG -> OFF (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-            else if (bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG | BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
-                bms->state = BMS_STATE_NORMAL;
-                LOG_INF("CHG -> NORMAL (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-#ifndef CONFIG_BMS_IC_BQ769X2 /* bq769x2 has built-in ideal diode control */
-            else {
-                /* ideal diode control for discharge MOSFET (with hysteresis) */
-                if (bms->ic_data.current > 0.5F) {
-                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, true);
-                }
-                else if (bms->ic_data.current < 0.1F) {
-                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS, false);
-                }
-            }
-#endif
-            break;
-        case BMS_STATE_DIS:
-            if (!bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, 0);
-                bms->state = BMS_STATE_OFF;
-                LOG_INF("DIS -> OFF (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-            else if (bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG | BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
-                bms->state = BMS_STATE_NORMAL;
-                LOG_INF("DIS -> NORMAL (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-#ifndef CONFIG_BMS_IC_BQ769X2 /* bq769x2 has built-in ideal diode control */
-            else {
-                /* ideal diode control for charge MOSFET (with hysteresis) */
-                if (bms->ic_data.current < -0.5F) {
-                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, true);
-                }
-                else if (bms->ic_data.current > -0.1F) {
-                    bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG, false);
-                }
-            }
-#endif
-            break;
-        case BMS_STATE_NORMAL:
-            if (!bms_dis_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_CHG | BMS_SWITCH_PCHG);
-                bms->state = BMS_STATE_CHG;
-                LOG_INF("NORMAL -> CHG (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-            else if (!bms_chg_allowed(bms)) {
-                bms_ic_set_switches(bms->ic_dev, BMS_SWITCH_DIS | BMS_SWITCH_PDSG);
-                bms->state = BMS_STATE_DIS;
-                LOG_INF("NORMAL -> DIS (error flags: 0x%08x)", bms->ic_data.error_flags);
-            }
-            break;
-        case BMS_STATE_SHUTDOWN:
-            /* do nothing and wait until shutdown is completed */
-            break;
-    }
-}
-
-void bms_shutdown(struct bms_context *bms)
-{
-    bms_ic_set_switches(bms->ic_dev, 0);
-    bms->state = BMS_STATE_SHUTDOWN;
 }
 
 bool bms_chg_error(uint32_t error_flags)

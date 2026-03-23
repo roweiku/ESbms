@@ -7,7 +7,7 @@
 #ifndef BUTTON_H_
 #define BUTTON_H_
 
-#include <stdbool.h>
+#include <zephyr/kernel.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,20 +15,24 @@ extern "C" {
 
 /**
  * @file
- * @brief Functions to handle on/off switch
- */
-
-/**
- * Initialize button and configure interrupts
- */
-void button_init();
-
-/**
- * Check if button was pressed for 3 seconds
+ * @brief Button event system for power switch
  *
- * \return true if pressed for at least 3 seconds
+ * Button events are posted to the state machine event object (sm_events)
+ * via k_event_post(). The SM thread consumes them with k_event_wait().
  */
-bool button_pressed_for_3s();
+
+/** Button event bit flags */
+#define BTN_EVT_PRESS         BIT(0)
+#define BTN_EVT_RELEASE       BIT(1)
+#define BTN_EVT_LONG_PRESS_5S BIT(2)
+#define BTN_EVT_ALL           (BTN_EVT_PRESS | BTN_EVT_RELEASE | BTN_EVT_LONG_PRESS_5S)
+
+/**
+ * Initialize button GPIO, interrupts, debounce, and long-press detection.
+ *
+ * Must be called after the SM event object (sm_events) is initialized.
+ */
+void button_init(void);
 
 #ifdef __cplusplus
 }
