@@ -383,7 +383,7 @@ static enum smf_state_result charge_run(void *obj)
 
     /* Balance needed: cell approaching limit with voltage imbalance */
     if (cell_v_max > (cell_chg_limit - CELL_V_BALANCE_MARGIN)
-        && cell_v_diff > bms->ic_conf.bal_cell_voltage_diff)
+        && cell_v_diff > bms->ic_conf.bal_cell_voltage_diff + 0.02f)
     {
         LOG_INF("Balance needed: cell_max %.3fV, diff %.3fV", (double)cell_v_max,
                 (double)cell_v_diff);
@@ -466,6 +466,7 @@ static enum smf_state_result err_run(void *obj)
 
     if (o->bms->ic_data.error_flags == 0 && (o->events & BTN_EVT_LONG_PRESS_5S)) {
         o->bms->error_flags = 0;
+        o->bms->chg_enable = true;
         smf_set_state(SMF_CTX(o), &smf_state_table[SM_OFF]);
         LOG_INF("Exiting ERROR: flags cleared + long press");
     }

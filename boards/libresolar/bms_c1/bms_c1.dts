@@ -93,6 +93,7 @@
 		alert-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
 		used-cell-channels = <0xFFFF>;
 		crc-enabled;
+		auto-pdsg;
 		/* all NTCs configured with 18k pull-up */
 		ts1-pin-config = <0x07>;
 		ts3-pin-config = <0x07>;
@@ -192,7 +193,7 @@
 
 	spim2_default: spim2_default {
 		group1 {
-			pinmux = <SPIM2_MOSI_GPIO7>;
+			pinmux = <SPIM2_MOSI_GPIO4>;
 			output-low;
 		};
 	};

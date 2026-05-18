@@ -543,7 +543,8 @@ static int bq769x2_init_config(const struct device *dev)
          * Disable pre-discharge timeout (DSG FETs are only turned on based on bus voltage).
          * PDSG voltage settings in BQ769X2_SET_FET_PDSG_STOP_DV are kept at default 500 mV.
          */
-        err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_FET_PDSG_TIMEOUT, 0);
+        err |= bq769x2_datamem_write_u1(dev, BQ769X2_SET_FET_PDSG_TIMEOUT, 30);//200ms
+        err |= bq769x2_datamem_write_u2(dev, BQ769X2_SET_FET_PDSG_STOP_DV, 100);//1000mv
     }
     else {
         /* Disable automatic pre-discharge before switching on DSG FETs */

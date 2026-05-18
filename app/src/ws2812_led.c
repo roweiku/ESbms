@@ -154,10 +154,10 @@ static void anim_charge(uint32_t tick)
 {
     float soc = bms.soc;
 
-    if (bms.full) {
-        anim_off();
-        return;
-    }
+    // if (bms.full) {
+    //     anim_off();
+    //     return;
+    // }
 
     /* Number of LEDs in the animation range */
     int range;
